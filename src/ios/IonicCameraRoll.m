@@ -40,9 +40,10 @@
   // Run a background job
   [self.commandDelegate runInBackground:^{
     
+   //NSMutableDictionary* photos = [NSMutableDictionary dictionaryWithDictionary:@{}];
     // Enumerate all of the group saved photos, which is our Camera Roll on iOS
     [library enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
-      
+     
       // When there are no more images, the group will be nil
       if(group == nil) {
         
@@ -57,15 +58,24 @@
         
         [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
           
-          NSDictionary *urls = [result valueForProperty:ALAssetPropertyURLs];
+            CGImageRef thumbnailImageRef = [result thumbnail];
+            UIImage* thumbnail = [UIImage imageWithCGImage:thumbnailImageRef];
+            NSString* base64encoded = [UIImagePNGRepresentation(thumbnail) base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+            NSDictionary *urls = [result valueForProperty:ALAssetPropertyURLs];
           
           [urls enumerateKeysAndObjectsUsingBlock:^(id key, NSURL *obj, BOOL *stop) {
-
-            // Send the URL for this asset back to the JS callback
-            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:obj.absoluteString];
+ NSMutableDictionary* photos = [NSMutableDictionary dictionaryWithDictionary:@{}];
+              NSDictionary* photo = @{
+                                      @"url": obj.absoluteString,
+                                      @"base64encoded": base64encoded
+                                      };
+           [photos setObject:photo forKey:photo[@"url"]];
+              NSArray* photoMsg = [photos allValues];
+              // Send the URL for this asset back to the JS callback
+            CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsArray:photoMsg];
             [pluginResult setKeepCallbackAsBool:YES];
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-          
+            
           }];
         }];
       }
