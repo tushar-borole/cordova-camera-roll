@@ -40,7 +40,7 @@
   // Run a background job
   [self.commandDelegate runInBackground:^{
     
-   //NSMutableDictionary* photos = [NSMutableDictionary dictionaryWithDictionary:@{}];
+   
     // Enumerate all of the group saved photos, which is our Camera Roll on iOS
     [library enumerateGroupsWithTypes:ALAssetsGroupSavedPhotos usingBlock:^(ALAssetsGroup *group, BOOL *stop) {
      
@@ -56,7 +56,7 @@
         
         // Enumarate this group of images
         
-        [group enumerateAssetsUsingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
+        [group enumerateAssetsWithOptions:NSEnumerationReverse usingBlock:^(ALAsset *result, NSUInteger index, BOOL *stop) {
           
             CGImageRef thumbnailImageRef = [result thumbnail];
             UIImage* thumbnail = [UIImage imageWithCGImage:thumbnailImageRef];
